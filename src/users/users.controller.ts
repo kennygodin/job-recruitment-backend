@@ -17,6 +17,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -59,6 +61,8 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('ADMIN')
   fetchAllUsers() {
     return [{ id: 1 }, { id: 2 }];
   }
