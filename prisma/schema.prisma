@@ -13,6 +13,25 @@ enum Role {
   APPLICANT
 }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  REJECTED
+  ACCEPTED
+}
+
 model User {
   id        Int       @default(autoincrement()) @id
   userId    String    @unique @default(uuid()) 
@@ -33,6 +52,8 @@ model User {
 
   refreshTokens RefreshToken[]
   resetTokens ResetToken[]
+  jobs Job[]
+  applications Application[]
 }
 
 model RefreshToken {
@@ -53,3 +74,33 @@ model ResetToken {
   expiresAt  DateTime
 }
 
+model Job {
+  id      Int     @default(autoincrement()) @id
+  jobId    String    @unique @default(uuid())
+  title   String
+  description   String
+  company       String
+  location      String
+  type          JobType
+  status        JobStatus
+  postedById  String
+  postedBy      User      @relation(fields: [postedById], references: [userId])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  applicants Application[]
+}
+
+model Application {
+  id      Int     @default(autoincrement()) @id
+  applicationId    String    @unique @default(uuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [userId])
+  jobId   String
+  job     Job      @relation(fields: [jobId], references: [jobId])
+  resume        String?
+  coverLetter   String?
+  status        ApplicationStatus
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+}
