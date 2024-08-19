@@ -1,0 +1,52 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CreateJobDto } from './dto/create-job.dto';
+import { JobsService } from './jobs.service';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+
+@Controller('jobs')
+export class JobsController {
+  constructor(private readonly jobsService: JobsService) {}
+
+  @Post()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('EMPLOYER')
+  createJob(@Body() createJobDto: CreateJobDto, @Req() req) {
+    return this.jobsService.createJob(req.userId, createJobDto);
+  }
+
+  @Get()
+  getAllJobs(
+    @Query('title') title?: string,
+    @Query('location') location?: string,
+  ) {
+    return this.jobsService.getAllJobs(title, location);
+  }
+
+  @Get(':id')
+  getJob(@Param() params: any) {
+    return `A job ${params.id}`;
+  }
+
+  @Patch(':id')
+  updateJob(@Param() params: any) {
+    return `Updated job ${params.id}`;
+  }
+
+  @Delete(':id')
+  deleteJob(@Param() params: any) {
+    return `Deleted job ${params.id}`;
+  }
+}

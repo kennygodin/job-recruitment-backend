@@ -6,6 +6,12 @@ import {
   IsString,
 } from 'class-validator';
 
+enum RoleType {
+  ADMIN = 'ADMIN',
+  EMPLOYER = 'EMPLOYER',
+  APPLICANT = 'APPLICANT',
+}
+
 export class RegisterUserDto {
   @IsNotEmpty()
   @IsString()
@@ -18,7 +24,9 @@ export class RegisterUserDto {
   @IsNotEmpty()
   password: string;
 
-  @IsEnum(['ADMIN', 'EMPLOYER', 'APPLICANT'])
+  @IsEnum(RoleType, {
+    message: `role must be one of the following values: ${Object.values(RoleType).join(', ')}`,
+  })
   @IsNotEmpty()
   role: 'ADMIN' | 'EMPLOYER' | 'APPLICANT';
 
