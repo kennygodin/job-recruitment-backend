@@ -15,6 +15,8 @@ import { JobsService } from './jobs.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
+import { UpdateJobDto } from './dto/update-job.dto';
+import { CustomRequest } from 'src/interface/req.interface';
 
 @Controller('jobs')
 export class JobsController {
@@ -23,7 +25,7 @@ export class JobsController {
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('EMPLOYER')
-  createJob(@Body() createJobDto: CreateJobDto, @Req() req) {
+  createJob(@Body() createJobDto: CreateJobDto, @Req() req: CustomRequest) {
     return this.jobsService.createJob(req.userId, createJobDto);
   }
 
@@ -36,17 +38,25 @@ export class JobsController {
   }
 
   @Get(':id')
-  getJob(@Param() params: any) {
-    return `A job ${params.id}`;
+  getJob(@Param('id') id: string) {
+    return this.jobsService.getJob(id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('EMPLOYER')
   @Patch(':id')
-  updateJob(@Param() params: any) {
-    return `Updated job ${params.id}`;
+  updateJob(
+    @Param('id') id: string,
+    @Body() updateJobDto: UpdateJobDto,
+    @Req() req: CustomRequest,
+  ) {
+    return this.jobsService.updateJob(id, updateJobDto, req.userId);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('EMPLOYER')
   @Delete(':id')
-  deleteJob(@Param() params: any) {
-    return `Deleted job ${params.id}`;
+  deleteJob(@Param('id') id: string, @Req() req: CustomRequest) {
+    return this.jobsService.deleteJob(id, req.userId);
   }
 }

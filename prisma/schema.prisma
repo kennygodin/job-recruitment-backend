@@ -60,7 +60,7 @@ model RefreshToken {
   id      Int     @default(autoincrement()) @id
   token   String   @unique
   userId  String
-  user    User    @relation(fields: [userId], references: [userId])
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   createdAt  DateTime @default(now())
   expiresAt  DateTime
 }
@@ -69,7 +69,7 @@ model ResetToken {
   id      Int     @default(autoincrement()) @id
   token   String   @unique
   userId  String
-  user    User    @relation(fields: [userId], references: [userId])
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   createdAt  DateTime @default(now())
   expiresAt  DateTime
 }
@@ -83,8 +83,13 @@ model Job {
   location      String
   type          JobType
   status        JobStatus
+  industry      String?
+  priceRange    String?
+  negotiable    Boolean?
+  jobSummary    String?
+  jobRequirements  String?
   postedById  String
-  postedBy      User      @relation(fields: [postedById], references: [userId])
+  postedBy      User      @relation(fields: [postedById], references: [userId], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -95,9 +100,9 @@ model Application {
   id      Int     @default(autoincrement()) @id
   applicationId    String    @unique @default(uuid())
   userId  String
-  user    User     @relation(fields: [userId], references: [userId])
+  user    User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   jobId   String
-  job     Job      @relation(fields: [jobId], references: [jobId])
+  job     Job      @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
   resume        String?
   coverLetter   String?
   status        ApplicationStatus
