@@ -7,12 +7,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JobsModule } from './jobs/jobs.module';
 import { BusinessModule } from './business/business.module';
+import { ApplicationModule } from './applications/application.module';
 
 @Module({
   imports: [
     UsersModule,
     DatabaseModule,
     JobsModule,
+    BusinessModule,
+    ApplicationModule,
     ConfigModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -22,7 +25,6 @@ import { BusinessModule } from './business/business.module';
         secret: configService.get<string>('JWT_SECRET'),
       }),
     }),
-    BusinessModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -99,10 +99,11 @@ model Job {
 model Application {
   id      Int     @default(autoincrement()) @id
   applicationId    String    @unique @default(uuid())
-  userId  String
-  user    User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  appliedById  String
+  appliedBy    User     @relation(fields: [appliedById], references: [userId], onDelete: Cascade)
   jobId   String
   job     Job      @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
+  yearsOfExperience   String
   resume        String?
   coverLetter   String?
   status        ApplicationStatus
