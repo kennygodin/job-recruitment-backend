@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 
 enum JobType {
   FULL_TIME = 'FULL_TIME',
@@ -29,4 +35,24 @@ export class CreateJobDto {
   })
   @IsNotEmpty()
   type: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN';
+
+  @IsOptional()
+  @IsString()
+  industry: string;
+
+  @IsOptional()
+  @IsString()
+  priceRange: string;
+
+  @IsOptional()
+  @IsBoolean()
+  negotiable: boolean;
+
+  @IsOptional()
+  @IsString()
+  jobSummary: string;
+
+  @IsOptional()
+  @IsString()
+  jobRequirements: string;
 }

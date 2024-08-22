@@ -40,8 +40,6 @@ export class UsersService {
     const userData: Prisma.UserCreateInput = {
       ...registerUserDto,
       password: hashedPassword,
-      isVerified: false,
-      status: 'active',
     };
 
     return this.databaseService.user.create({

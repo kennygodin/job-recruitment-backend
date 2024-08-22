@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JobsModule } from './jobs/jobs.module';
+import { BusinessModule } from './business/business.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JobsModule } from './jobs/jobs.module';
         secret: configService.get<string>('JWT_SECRET'),
       }),
     }),
+    BusinessModule,
   ],
   controllers: [AppController],
   providers: [AppService],

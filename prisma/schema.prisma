@@ -39,39 +39,39 @@ model User {
   email     String    @unique 
   password  String
   role      Role
-  avatar String?
+  avatar    String?
   isVerified      Boolean   @default(false)
-  status          String    @default("active")
-  companyName     String? 
-  companyWebsite  String? 
-  companyAddress  String? 
+  status          String    @default("active") 
   resume          String? 
   portfolio       String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  business        Business?
+  positionInCompany   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  refreshTokens RefreshToken[]
-  resetTokens ResetToken[]
-  jobs Job[]
-  applications Application[]
+  refreshTokens   RefreshToken[]
+  resetTokens     ResetToken[]
+  jobs            Job[]
+  applications    Application[]
 }
 
-model RefreshToken {
-  id      Int     @default(autoincrement()) @id
-  token   String   @unique
-  userId  String
-  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
-}
-
-model ResetToken {
-  id      Int     @default(autoincrement()) @id
-  token   String   @unique
-  userId  String
-  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
+model Business {
+  id                Int      @default(autoincrement()) @id
+  businessId        String   @unique @default(uuid()) 
+  companyName       String
+  companyWebsite    String
+  companyAddress    String
+  numberOfEmployees Int
+  industry          String
+  typeOfEmployer    String
+  whereDidYouHear   String
+  notificationEmail String
+  countryCode       String
+  country           String
+  phone             String
+  
+  user              User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId            String   @unique
 }
 
 model Job {
@@ -108,4 +108,22 @@ model Application {
   status        ApplicationStatus
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model RefreshToken {
+  id      Int     @default(autoincrement()) @id
+  token   String   @unique
+  userId  String
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+}
+
+model ResetToken {
+  id      Int     @default(autoincrement()) @id
+  token   String   @unique
+  userId  String
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
 }

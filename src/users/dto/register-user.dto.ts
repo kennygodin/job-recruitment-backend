@@ -36,18 +36,6 @@ export class RegisterUserDto {
 
   @IsOptional()
   @IsString()
-  companyName?: string;
-
-  @IsOptional()
-  @IsString()
-  companyWebsite?: string;
-
-  @IsOptional()
-  @IsString()
-  companyAddress?: string;
-
-  @IsOptional()
-  @IsString()
   resume?: string;
 
   @IsOptional()
