@@ -3,7 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { CreateBusinessDto } from './dto/create-business-dto';
 import { UpdateBusinessDto } from './dto/update-business-dto';
 

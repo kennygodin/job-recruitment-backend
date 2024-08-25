@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateApplicationDto } from './dto/create-application.dto';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { UpdateApplicationDto } from './dto/update-application.dto';
-import { EmailService } from 'src/utils/email/mail.service';
+import { EmailService } from '../utils/email/mail.service';
 
 @Injectable()
 export class ApplicationsService {

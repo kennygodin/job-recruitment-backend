@@ -8,12 +8,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthGuard } from '../guards/auth.guard';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business-dto';
 import { CustomRequest } from 'src/interface/req.interface';
-import { RolesGuard } from 'src/guards/roles.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
 import { UpdateBusinessDto } from './dto/update-business-dto';
 
 @Controller('business')

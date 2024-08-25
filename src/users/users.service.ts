@@ -4,16 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { PasswordService } from 'src/utils/password/password.service';
+import { PasswordService } from '../utils/password/password.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { nanoid } from 'nanoid';
-import { EmailService } from 'src/utils/email/mail.service';
+import { EmailService } from '../utils/email/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
