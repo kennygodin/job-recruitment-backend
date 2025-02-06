@@ -3,11 +3,13 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { DatabaseModule } from 'src/database/database.module';
 import { PasswordModule } from 'src/utils/password/password.module';
-import { EmailModule } from 'src/utils/email/mail.module';
+import { ResendModule } from 'src/utils/resend/resend.module';
+import { TokenModule } from 'src/utils/tokens/tokens.module';
 
 @Module({
-  imports: [DatabaseModule, PasswordModule, EmailModule],
+  imports: [DatabaseModule, PasswordModule, ResendModule, TokenModule],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

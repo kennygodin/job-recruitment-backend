@@ -10,7 +10,6 @@ enum JobType {
   FULL_TIME = 'FULL_TIME',
   PART_TIME = 'PART_TIME',
   CONTRACT = 'CONTRACT',
-  INTERN = 'INTERN',
 }
 
 export class CreateJobDto {
@@ -31,10 +30,12 @@ export class CreateJobDto {
   location: string;
 
   @IsEnum(JobType, {
-    message: `type must be one of the following values: ${Object.values(JobType).join(', ')}`,
+    message: `Job type must be one of the following values: ${Object.values(JobType).join(', ')}`,
   })
   @IsNotEmpty()
-  type: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN';
+  jobType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
+
+  bStatus: 'OPEN' | 'CLOSED';
 
   @IsOptional()
   @IsString()
@@ -42,7 +43,11 @@ export class CreateJobDto {
 
   @IsOptional()
   @IsString()
-  priceRange: string;
+  experience: string;
+
+  @IsOptional()
+  @IsString()
+  salary: string;
 
   @IsOptional()
   @IsBoolean()

@@ -5,6 +5,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -29,6 +30,11 @@ export class UsersController {
     return this.usersService.registerUser(registerUserDto);
   }
 
+  @Get('new-verification')
+  verifyUserEmail(@Query('token') token: string) {
+    return this.usersService.verifyUserEmail(token);
+  }
+
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.usersService.loginUser(loginUserDto);
@@ -51,8 +57,11 @@ export class UsersController {
   }
 
   @Post('reset-password')
-  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.usersService.resetPassword(resetPasswordDto);
+  resetPassword(
+    @Query('token') token: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    return this.usersService.resetPassword(token, resetPasswordDto);
   }
 
   @Patch('update')

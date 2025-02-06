@@ -13,96 +13,108 @@ import { v4 as uuidv4 } from 'uuid';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { nanoid } from 'nanoid';
-import { EmailService } from '../utils/email/mail.service';
+import { ResendService } from '../utils/resend/resend.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { TokenService } from 'src/utils/tokens/tokens.service';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly databaseService: DatabaseService,
+    private readonly db: DatabaseService,
     private readonly passwordService: PasswordService,
-    private readonly EmailService: EmailService,
+    private readonly resendService: ResendService,
+    private readonly tokenService: TokenService,
     private jwtService: JwtService,
   ) {}
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    const { email, password } = registerUserDto;
-    const userExist = await this.databaseService.user.findUnique({
+    const { name, email, password } = registerUserDto;
+    const userExist = await this.db.user.findUnique({
       where: {
         email,
       },
     });
     if (userExist) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException('Email already exists!');
     }
+
     // hash password before saving to db
     const hashedPassword = await this.passwordService.hashPassword(password);
     const userData: Prisma.UserCreateInput = {
       ...registerUserDto,
       password: hashedPassword,
+      role: 'USER',
     };
 
-    return this.databaseService.user.create({
+    await this.db.user.create({
       data: userData,
     });
+
+    // Send verification email
+    const { token } = await this.tokenService.generateVerificationToken(email);
+    await this.resendService.sendVerificationEmail(name, email, token);
+
+    return { message: 'Email sent!' };
   }
 
-  async loginUser(signInUserDto: LoginUserDto) {
-    const { email, password } = signInUserDto;
-    const user = await this.databaseService.user.findUnique({
+  async verifyUserEmail(token: string) {
+    if (!token) {
+      throw new UnauthorizedException('Token is required!');
+    }
+
+    const tokenData =
+      await this.tokenService.getVerificationTokenByToken(token);
+
+    if (!tokenData) {
+      throw new UnauthorizedException('Invalid token!');
+    }
+
+    await this.db.user.update({
+      where: { email: tokenData.email },
+      data: { isVerified: true },
+    });
+
+    await this.tokenService.deleteVerificationTokenByEmail(tokenData.email);
+
+    return { message: 'User verified!' };
+  }
+
+  async loginUser(loginInUserDto: LoginUserDto) {
+    const { email, password } = loginInUserDto;
+    const user = await this.db.user.findUnique({
       where: {
         email,
       },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Email not registered');
+      throw new UnauthorizedException('Invalid credentials!');
     }
 
     const passwordIsCorrect = await this.passwordService.comparePasswords(
       password,
       user.password,
     );
-    if (user && passwordIsCorrect) {
-      return this.generateUserTokens(user.userId);
-    } else {
-      throw new UnauthorizedException('Invalid credentials');
+
+    if (!passwordIsCorrect) {
+      throw new UnauthorizedException('Invalid credentials!');
     }
+
+    return this.tokenService.generateUserTokens(user.userId);
   }
 
   async refreshTokens(refreshToken: string) {
-    // Retrieve the refresh token record from the database
-    const token = await this.databaseService.refreshToken.findUnique({
-      where: {
-        token: refreshToken,
-        expiresAt: {
-          gte: new Date(),
-        },
-      },
-    });
-
-    if (!token) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
-    await this.databaseService.refreshToken.delete({
-      where: {
-        token: refreshToken,
-      },
-    });
-
-    // Generate new access and refresh tokens using the userId
-    return this.generateUserTokens(token.userId);
+    await this.tokenService.getRefreshTokenByToken(refreshToken);
   }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const { oldPassword, newPassword } = changePasswordDto;
 
-    const user = await this.databaseService.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { userId },
     });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('User not found!');
     }
 
     const passwordIsCorrect = await this.passwordService.comparePasswords(
@@ -111,105 +123,75 @@ export class UsersService {
     );
 
     if (!passwordIsCorrect) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials!');
     }
 
     const hashedPassword = await this.passwordService.hashPassword(newPassword);
-    await this.databaseService.user.update({
+    await this.db.user.update({
       where: { userId },
       data: { password: hashedPassword },
     });
-    return { message: 'Password updated' };
+    return { message: 'Password updated!' };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
-    const user = await this.databaseService.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: {
         email: forgotPasswordDto.email,
       },
     });
 
     if (user) {
-      const resetToken = nanoid(64);
-      const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 1);
+      const token = uuidv4();
+      const expires = new Date();
+      expires.setHours(expires.getHours() + 1);
 
-      // reset token
+      await this.db.resetToken.delete({
+        where: { email: user.email },
+      });
 
-      await this.databaseService.resetToken.create({
+      await this.db.resetToken.create({
         data: {
-          token: resetToken,
-          userId: user.userId,
-          expiresAt: expiryDate,
+          token,
+          email: user.email,
+          expires,
         },
       });
 
-      this.EmailService.sendPasswordResetMail(
+      this.resendService.sendPasswordResetMail(
         forgotPasswordDto.email,
-        resetToken,
+        token,
         user,
       );
     }
 
-    return { message: 'User will receive an email if it exists' };
+    return { message: 'Email send!' };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const { resetToken, newPassword } = resetPasswordDto;
-    const token = await this.databaseService.resetToken.delete({
+  async resetPassword(token: string, resetPasswordDto: ResetPasswordDto) {
+    const { password } = resetPasswordDto;
+
+    const resetToken = await this.db.resetToken.delete({
       where: {
-        token: resetToken,
-        expiresAt: { gte: new Date() },
+        token,
+        expires: { gte: new Date() },
       },
     });
 
     if (!token) {
-      throw new UnauthorizedException('Invalid link');
+      throw new UnauthorizedException('Invalid link!');
     }
 
-    const hashedPassword = await this.passwordService.hashPassword(newPassword);
-    await this.databaseService.user.update({
+    const hashedPassword = await this.passwordService.hashPassword(password);
+    await this.db.user.update({
       where: {
-        userId: token.userId,
+        email: resetToken.email,
       },
       data: {
         password: hashedPassword,
       },
     });
 
-    return { message: 'Password changed' };
-  }
-
-  async generateUserTokens(userId: string) {
-    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '1hr' });
-    const refreshToken = uuidv4();
-
-    this.storeRefreshToken(refreshToken, userId);
-
-    return { accessToken, refreshToken };
-  }
-
-  async storeRefreshToken(token: string, userId: string) {
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 3);
-    const updatedToken = await this.databaseService.refreshToken.updateMany({
-      where: {
-        userId,
-      },
-      data: {
-        token,
-        expiresAt: expiryDate,
-      },
-    });
-
-    if (updatedToken.count === 0) {
-      await this.databaseService.refreshToken.create({
-        data: {
-          token,
-          userId,
-          expiresAt: expiryDate,
-        },
-      });
-    }
+    return { message: 'Password changed!' };
   }
 }

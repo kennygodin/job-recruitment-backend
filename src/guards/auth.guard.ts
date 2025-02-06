@@ -22,7 +22,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid token!');
     }
 
     try {
@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
       request.user = user;
     } catch (e) {
       Logger.error(e.message);
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid token!');
     }
     return true;
   }

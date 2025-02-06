@@ -27,12 +27,15 @@ export class BusinessController {
     @Body() createBusinessDto: CreateBusinessDto,
     @Req() req: CustomRequest,
   ) {
-    return this.businessService.createBusiness(req.userId, createBusinessDto);
+    return null;
+    // return this.businessService.createBusiness(req.userId, createBusinessDto);
   }
 
   @Get(':id')
   getBusiness(@Param('id') id: string) {
-    return this.businessService.getBusiness(id);
+    //
+    // return null
+    // return this.businessService.getBusiness(id);
   }
 
   @UseGuards(AuthGuard)
@@ -42,16 +45,18 @@ export class BusinessController {
     @Param('id') id: string,
     @Req() req: CustomRequest,
   ) {
-    return this.businessService.updateBusiness(
-      id,
-      req.userId,
-      updateBusinessDto,
-    );
+    return null;
+    // return this.businessService.updateBusiness(
+    //   id,
+    //   req.userId,
+    //   updateBusinessDto,
+    // );
   }
 
   @UseGuards(AuthGuard)
   @Patch(':id')
   deleteBusiness(@Param('id') id: string, @Req() req: CustomRequest) {
-    return this.businessService.deleteBusiness(id, req.userId);
+    return null;
+    // return this.businessService.deleteBusiness(id, req.userId);
   }
 }

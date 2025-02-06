@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ApplicationsController } from './applications.controller';
 import { ApplicationsService } from './applications.service';
 import { DatabaseModule } from 'src/database/database.module';
-import { EmailModule } from 'src/utils/email/mail.module';
+import { ResendModule } from 'src/utils/resend/resend.module';
 
 @Module({
-  imports: [DatabaseModule, EmailModule],
+  imports: [DatabaseModule, ResendModule],
   controllers: [ApplicationsController],
   providers: [ApplicationsService],
 })

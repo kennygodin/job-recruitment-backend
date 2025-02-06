@@ -3,21 +3,122 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int            @id @default(autoincrement())
+  userId            String @unique @default(uuid())
+  name              String
+  email             String         @unique
+  password          String
+  role              Role
+  image             String?
+  isVerified        Boolean        @default(false)
+  status            String         @default("active")
+  resume            String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  applications      Application[]
+  company           Company?
+}
+
+model Company {
+  id                Int    @id @default(autoincrement())
+  companyId        String @unique @default(uuid())
+  companyName       String
+  companyWebsite    String
+  companyAddress    String
+  logo              String?
+  industry          String
+  numberOfEmployees    String?
+  whereDidYouHear   String?
+  notificationEmail String?
+  cacDocument       String
+  jobs              Job[]
+  socials           Social[]
+  country           String
+  phone             String
+  userId            String @unique
+  user              User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model Job {
+  id              Int           @id @default(autoincrement())
+  jobId           String            @unique @default(uuid())
+  title           String
+  description     String
+  company         String
+  location        String
+  jobType         JobType
+  jobStatus       JobStatus
+  postedById      String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  industry        String?
+  jobRequirements String?
+  jobSummary      String?
+  experience      String?
+  salary          String?
+  applicants      Application[]
+  postedBy        Company          @relation(fields: [postedById], references: [companyId], onDelete: Cascade)
+}
+
+model Application {
+  id                Int               @id @default(autoincrement())
+  applicationId     String            @unique @default(uuid())
+  jobId             String
+  resume            String?
+  coverLetter       String?
+  status            ApplicationStatus
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  appliedById       String
+  yearsOfExperience String
+  appliedBy         User              @relation(fields: [appliedById], references: [userId], onDelete: Cascade)
+  job               Job               @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
+}
+
+model Social {
+  id        Int      @id @default(autoincrement())
+  socialId     String            @unique @default(uuid())
+  companyId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  company      Company     @relation(fields: [socialId], references: [companyId], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id              String @id @default(cuid())
+  email             String         @unique
+  token           String           @unique
+  expires         DateTime
+}
+
+model RefreshToken {
+  id              String @id @default(cuid())
+  email             String         @unique
+  token           String           @unique
+  expires         DateTime
+}
+
+model ResetToken {
+  id              String @id @default(cuid())
+  email             String         @unique
+  token           String           @unique
+  expires         DateTime
 }
 
 enum Role {
   ADMIN
-  EMPLOYER
-  APPLICANT
+  USER
 }
 
 enum JobType {
   FULL_TIME
   PART_TIME
   CONTRACT
-  INTERN
 }
 
 enum JobStatus {
@@ -30,101 +131,4 @@ enum ApplicationStatus {
   REVIEWED
   REJECTED
   ACCEPTED
-}
-
-model User {
-  id        Int       @default(autoincrement()) @id
-  userId    String    @unique @default(uuid()) 
-  name      String
-  email     String    @unique 
-  password  String
-  role      Role
-  avatar    String?
-  isVerified      Boolean   @default(false)
-  status          String    @default("active") 
-  resume          String? 
-  portfolio       String?
-  business        Business?
-  positionInCompany   String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  refreshTokens   RefreshToken[]
-  resetTokens     ResetToken[]
-  jobs            Job[]
-  applications    Application[]
-}
-
-model Business {
-  id                Int      @default(autoincrement()) @id
-  businessId        String   @unique @default(uuid()) 
-  companyName       String
-  companyWebsite    String
-  companyAddress    String
-  numberOfEmployees Int
-  industry          String
-  typeOfEmployer    String
-  whereDidYouHear   String
-  notificationEmail String
-  countryCode       String
-  country           String
-  phone             String
-  
-  user              User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  userId            String   @unique
-}
-
-model Job {
-  id      Int     @default(autoincrement()) @id
-  jobId    String    @unique @default(uuid())
-  title   String
-  description   String
-  company       String
-  location      String
-  type          JobType
-  status        JobStatus
-  industry      String?
-  priceRange    String?
-  negotiable    Boolean?
-  jobSummary    String?
-  jobRequirements  String?
-  postedById  String
-  postedBy      User      @relation(fields: [postedById], references: [userId], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  applicants Application[]
-}
-
-model Application {
-  id      Int     @default(autoincrement()) @id
-  applicationId    String    @unique @default(uuid())
-  appliedById  String
-  appliedBy    User     @relation(fields: [appliedById], references: [userId], onDelete: Cascade)
-  jobId   String
-  job     Job      @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
-  yearsOfExperience   String
-  resume        String?
-  coverLetter   String?
-  status        ApplicationStatus
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model RefreshToken {
-  id      Int     @default(autoincrement()) @id
-  token   String   @unique
-  userId  String
-  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
-}
-
-model ResetToken {
-  id      Int     @default(autoincrement()) @id
-  token   String   @unique
-  userId  String
-  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
 }

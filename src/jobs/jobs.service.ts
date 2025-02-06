@@ -12,7 +12,7 @@ export class JobsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async createJob(userId: string, createJobDto: CreateJobDto) {
-    const { title, description, company, location, type } = createJobDto;
+    const { title, description, company, location, jobType } = createJobDto;
 
     return await this.databaseService.job.create({
       data: {
@@ -20,9 +20,9 @@ export class JobsService {
         description,
         company,
         location,
-        type,
+        jobType,
         postedById: userId,
-        status: 'OPEN',
+        jobStatus: 'OPEN',
       },
     });
   }

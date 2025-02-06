@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { DatabaseService } from '../database/database.service';
 import { PasswordService } from '../utils/password/password.service';
-import { EmailService } from '../utils/email/mail.service';
+import { EmailService } from '../utils/resend/resend.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { ConflictException } from '@nestjs/common';
@@ -81,7 +81,7 @@ describe('UsersService', () => {
       name: 'test name',
       email: 'testemail@gmail.com',
       password: 'test123321!',
-      role: 'APPLICANT',
+      role: 'USER',
     };
 
     it('should throw a ConflictException if the user already exists', async () => {

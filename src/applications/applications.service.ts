@@ -7,13 +7,13 @@ import {
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { DatabaseService } from '../database/database.service';
 import { UpdateApplicationDto } from './dto/update-application.dto';
-import { EmailService } from '../utils/email/mail.service';
+import { ResendService } from '../utils/resend/resend.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly emailService: EmailService,
+    private readonly emailService: ResendService,
   ) {}
 
   async createApplication(
@@ -62,15 +62,15 @@ export class ApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    const { email, name } = application.job.postedBy;
+    // const { email, name } = application.job.postedBy;
 
-    this.emailService.sendCreateApplicationMail(
-      email,
-      name,
-      application.job,
-      application.status,
-      application.applicationId,
-    );
+    // this.emailService.sendCreateApplicationMail(
+    //   email,
+    //   name,
+    //   application.job,
+    //   application.status,
+    //   application.applicationId,
+    // );
 
     return application;
   }
@@ -133,13 +133,13 @@ export class ApplicationsService {
     // Send notification email when status changes
     const { name, email } = application.appliedBy;
 
-    this.emailService.sendApplicationStatusMail(
-      email,
-      name,
-      application.job,
-      update.status,
-      update.applicationId,
-    );
+    // this.emailService.sendApplicationStatusMail(
+    //   email,
+    //   name,
+    //   application.job,
+    //   update.status,
+    //   update.applicationId,
+    // );
 
     return 'Application status updated';
   }
