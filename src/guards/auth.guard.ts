@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
@@ -30,6 +29,11 @@ export class AuthGuard implements CanActivate {
       request.userId = payload.userId;
 
       const user = await this.getUserById(payload.userId);
+
+      if (!user) {
+        throw new UnauthorizedException('User not found!');
+      }
+
       request.user = user;
     } catch (e) {
       Logger.error(e.message);
@@ -45,6 +49,7 @@ export class AuthGuard implements CanActivate {
   private async getUserById(userId: string) {
     return this.databaseService.user.findUnique({
       where: { userId },
+      select: { id: true, role: true }, // ✅ Fetching only necessary fields
     });
   }
 }

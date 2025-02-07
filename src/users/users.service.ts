@@ -91,6 +91,13 @@ export class UsersService {
       throw new UnauthorizedException('Invalid credentials!');
     }
 
+    if (!user.isVerified) {
+      const { token } =
+        await this.tokenService.generateVerificationToken(email);
+      await this.resendService.sendVerificationEmail(user.name, email, token);
+      throw new UnauthorizedException('Verification email sent!');
+    }
+
     const passwordIsCorrect = await this.passwordService.comparePasswords(
       password,
       user.password,

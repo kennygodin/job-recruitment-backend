@@ -41,6 +41,7 @@ model Company {
   country           String
   phone             String
   userId            String @unique
+  companyStatus    CompanyStatus        
   user              User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
@@ -49,11 +50,10 @@ model Job {
   jobId           String            @unique @default(uuid())
   title           String
   description     String
-  company         String
+  companyId       String
   location        String
   jobType         JobType
   jobStatus       JobStatus
-  postedById      String
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   industry        String?
@@ -62,7 +62,7 @@ model Job {
   experience      String?
   salary          String?
   applicants      Application[]
-  postedBy        Company          @relation(fields: [postedById], references: [companyId], onDelete: Cascade)
+  company        Company          @relation(fields: [companyId], references: [companyId], onDelete: Cascade)
 }
 
 model Application {
@@ -74,9 +74,9 @@ model Application {
   status            ApplicationStatus
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-  appliedById       String
+  userId       String
   yearsOfExperience String
-  appliedBy         User              @relation(fields: [appliedById], references: [userId], onDelete: Cascade)
+  user              User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
   job               Job               @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
 }
 
@@ -126,9 +126,14 @@ enum JobStatus {
   CLOSED
 }
 
+enum CompanyStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum ApplicationStatus {
   PENDING
-  REVIEWED
-  REJECTED
   ACCEPTED
+  REJECTED
 }

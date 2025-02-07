@@ -121,14 +121,14 @@ export class ApplicationsService {
       );
     }
 
-    const update = await this.databaseService.application.update({
-      where: {
-        applicationId,
-      },
-      data: {
-        status: updateApplicationDto.status,
-      },
-    });
+    // const update = await this.databaseService.application.update({
+    //   where: {
+    //     applicationId,
+    //   },
+    //   data: {
+    //     status: updateApplicationDto.status,
+    //   },
+    // });
 
     // Send notification email when status changes
     const { name, email } = application.appliedBy;

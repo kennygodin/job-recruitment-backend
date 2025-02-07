@@ -6,7 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JobsModule } from './jobs/jobs.module';
-import { BusinessModule } from './business/business.module';
+import { BusinessModule } from './company/company.module';
 import { ApplicationModule } from './applications/application.module';
 
 @Module({
