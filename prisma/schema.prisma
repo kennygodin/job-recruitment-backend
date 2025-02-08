@@ -48,21 +48,20 @@ model Company {
 model Job {
   id              Int           @id @default(autoincrement())
   jobId           String            @unique @default(uuid())
-  title           String
-  description     String
-  companyId       String
-  location        String
+  jobTitle           String
+  jobDescription     String
+  jobCompanyId       String
+  jobLocation        String
   jobType         JobType
   jobStatus       JobStatus
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  industry        String?
-  jobRequirements String?
-  jobSummary      String?
-  experience      String?
-  salary          String?
+  jobRequirements String
+  jobSummary      String
+  jobExperience      String
+  jobSalary          String
   applicants      Application[]
-  company        Company          @relation(fields: [companyId], references: [companyId], onDelete: Cascade)
+  company        Company          @relation(fields: [jobCompanyId], references: [companyId], onDelete: Cascade)
 }
 
 model Application {

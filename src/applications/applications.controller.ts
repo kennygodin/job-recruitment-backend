@@ -20,41 +20,41 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 export class ApplicationsController {
   constructor(private readonly applicationService: ApplicationsService) {}
 
-  @UseGuards(AuthGuard)
-  @Post()
-  createApplication(
-    @Body() createApplicationDto: CreateApplicationDto,
-    @Req() req: CustomRequest,
-  ) {
-    return this.applicationService.createApplication(
-      req.userId,
-      createApplicationDto,
-    );
-  }
+  // @UseGuards(AuthGuard)
+  // @Post()
+  // createApplication(
+  //   @Body() createApplicationDto: CreateApplicationDto,
+  //   @Req() req: CustomRequest,
+  // ) {
+  //   return this.applicationService.createApplication(
+  //     req.userId,
+  //     createApplicationDto,
+  //   );
+  // }
 
-  @Get()
-  getApplications() {
-    return this.applicationService.getApplications();
-  }
+  // @Get()
+  // getApplications() {
+  //   return this.applicationService.getApplications();
+  // }
 
-  @UseGuards(AuthGuard)
-  @Get(':id')
-  getApplication(@Param('id') id: string) {
-    return this.applicationService.getApplication(id);
-  }
+  // @UseGuards(AuthGuard)
+  // @Get(':id')
+  // getApplication(@Param('id') id: string) {
+  //   return this.applicationService.getApplication(id);
+  // }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('EMPLOYER')
-  @Patch(':id')
-  updateApplication(
-    @Body() updateApplicationDto: UpdateApplicationDto,
-    @Param('id') id: string,
-    @Req() req: CustomRequest,
-  ) {
-    return this.applicationService.updateApplication(
-      id,
-      updateApplicationDto,
-      req.userId,
-    );
-  }
+  // @UseGuards(AuthGuard, RolesGuard)
+  // @Roles('EMPLOYER')
+  // @Patch(':id')
+  // updateApplication(
+  //   @Body() updateApplicationDto: UpdateApplicationDto,
+  //   @Param('id') id: string,
+  //   @Req() req: CustomRequest,
+  // ) {
+  //   return this.applicationService.updateApplication(
+  //     id,
+  //     updateApplicationDto,
+  //     req.userId,
+  //   );
+  // }
 }

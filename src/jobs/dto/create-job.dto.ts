@@ -1,3 +1,4 @@
+import { JobStatus } from '@prisma/client';
 import {
   IsNotEmpty,
   IsString,
@@ -15,49 +16,42 @@ enum JobType {
 export class CreateJobDto {
   @IsNotEmpty()
   @IsString()
-  title: string;
+  jobTitle: string;
 
   @IsNotEmpty()
   @IsString()
-  description: string;
+  jobDescription: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  company: string;
+  jobCompany: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  location: string;
+  jobLocation: string;
 
-  @IsEnum(JobType, {
-    message: `Job type must be one of the following values: ${Object.values(JobType).join(', ')}`,
-  })
+  @IsEnum(JobType)
   @IsNotEmpty()
   jobType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
 
-  bStatus: 'OPEN' | 'CLOSED';
-
-  @IsOptional()
+  @IsEnum(JobStatus)
+  @IsNotEmpty()
   @IsString()
-  industry: string;
+  jobStatus: 'OPEN' | 'CLOSED';
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  experience: string;
+  jobExperience: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  salary: string;
+  jobSalary: string;
 
-  @IsOptional()
-  @IsBoolean()
-  negotiable: boolean;
-
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   jobSummary: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   jobRequirements: string;
 }
