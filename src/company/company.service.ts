@@ -2,30 +2,30 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateCompanyDto } from './dto/create-company-dto';
 import { UpdateCompanyDto } from './dto/update-company-dto';
-import { ResendService } from 'src/utils/resend/resend.service';
+import { MailService } from 'src/utils/mail/mail.service';
 
 @Injectable()
 export class CompanyService {
   constructor(
     private readonly db: DatabaseService,
-    private readonly resendService: ResendService,
+    private readonly mailService: MailService,
   ) {}
 
-  async getCompanyDetailsByCompany(userId: string, companyId: string) {
-    const company = await this.db.company.findUnique({
-      where: { companyId, userId },
+  async getCompanyDetailsByCompany(userId: string) {
+    const user = await this.db.user.findUnique({
+      where: { userId },
+      include: { company: true },
     });
 
-    if (!company) {
-      throw new NotFoundException('Company details not found!');
+    if (!user || !user.company) {
+      throw new NotFoundException('Company not found!');
     }
 
-    return company;
+    return user.company;
   }
 
   async updateCompanyStatusByAdmin(
@@ -51,7 +51,7 @@ export class CompanyService {
         where: { companyId },
         data: { companyStatus: 'ACCEPTED' },
       });
-      await this.resendService.sendUpdateCompanyUpdateApprovalEmailToCompany(
+      await this.mailService.sendUpdateCompanyApprovalEmail(
         company,
         companyStatus,
       );
@@ -63,7 +63,7 @@ export class CompanyService {
         data: { companyStatus: 'REJECTED' },
       });
 
-      await this.resendService.sendUpdateCompanyUpdateRejectionEmailToCompany(
+      await this.mailService.sendUpdateCompanyRejectionEmail(
         company,
         companyStatus,
       );
@@ -115,83 +115,16 @@ export class CompanyService {
     });
 
     if (!company) {
-      throw new NotFoundException('Company creation failed!');
+      throw new BadRequestException('Company creation failed!');
     }
 
-    await this.resendService.sendCreateCompanyEmailToCompany(company);
+    await this.mailService.sendCreateCompanyEmailToCompany(company);
 
-    await this.resendService.sendCreateCompanyEmailToAdmin(
+    await this.mailService.sendCreateCompanyEmailToAdmin(
       'kenechukwuokoh30@gmail.com',
       company,
     );
 
     return { message: 'Application sent. Kindly check your email!' };
   }
-
-  // async getBusiness(businessId: string) {
-  //   const business = this.databaseService.business.findUnique({
-  //     where: {
-  //       businessId,
-  //     },
-  //   });
-
-  //   if (!business) {
-  //     throw new NotFoundException('Business not found');
-  //   }
-  //   return business;
-  // }
-
-  // async updateBusiness(
-  //   businessId: string,
-  //   userId: string,
-  //   updateBusinessDto: UpdateBusinessDto,
-  // ) {
-  //   const business = await this.databaseService.business.findUnique({
-  //     where: {
-  //       businessId,
-  //     },
-  //   });
-
-  //   if (!business) {
-  //     throw new NotFoundException('Business not found');
-  //   }
-
-  //   if (business.userId !== userId) {
-  //     throw new UnauthorizedException(
-  //       'You can only update the business you created',
-  //     );
-  //   }
-
-  //   return await this.databaseService.business.update({
-  //     where: {
-  //       businessId,
-  //     },
-  //     data: { ...UpdateBusinessDto },
-  //   });
-  // }
-
-  // async deleteBusiness(businessId: string, userId: string) {
-  //   const business = await this.databaseService.business.findUnique({
-  //     where: {
-  //       businessId,
-  //     },
-  //   });
-  //   if (!business) {
-  //     throw new NotFoundException('Job not found');
-  //   }
-
-  //   if (business.userId !== userId) {
-  //     throw new UnauthorizedException(
-  //       'You can only delete the business you created',
-  //     );
-  //   }
-
-  //   await this.databaseService.business.delete({
-  //     where: {
-  //       businessId,
-  //     },
-  //   });
-
-  //   return 'Business deleted';
-  // }
 }

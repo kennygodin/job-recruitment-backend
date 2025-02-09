@@ -8,23 +8,20 @@ import { DatabaseService } from '../database/database.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { PasswordService } from '../utils/password/password.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { nanoid } from 'nanoid';
-import { ResendService } from '../utils/resend/resend.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { TokenService } from 'src/utils/tokens/tokens.service';
+import { MailService } from 'src/utils/mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly db: DatabaseService,
     private readonly passwordService: PasswordService,
-    private readonly resendService: ResendService,
+    private readonly mailService: MailService,
     private readonly tokenService: TokenService,
-    private jwtService: JwtService,
   ) {}
 
   async registerUser(registerUserDto: RegisterUserDto) {
@@ -52,7 +49,7 @@ export class UsersService {
 
     // Send verification email
     const { token } = await this.tokenService.generateVerificationToken(email);
-    await this.resendService.sendVerificationEmail(name, email, token);
+    await this.mailService.sendVerificationEmail(name, email, token);
 
     return { message: 'Email sent!' };
   }
@@ -94,7 +91,7 @@ export class UsersService {
     if (!user.isVerified) {
       const { token } =
         await this.tokenService.generateVerificationToken(email);
-      await this.resendService.sendVerificationEmail(user.name, email, token);
+      await this.mailService.sendVerificationEmail(user.name, email, token);
       throw new UnauthorizedException('Verification email sent!');
     }
 
@@ -165,7 +162,7 @@ export class UsersService {
         },
       });
 
-      this.resendService.sendPasswordResetMail(
+      this.mailService.sendPasswordResetMail(
         forgotPasswordDto.email,
         token,
         user,

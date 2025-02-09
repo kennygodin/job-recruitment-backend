@@ -32,7 +32,7 @@ export class JobsController {
   }
 
   // GET ALL BY USER
-  @Get()
+  @Get('get-all-jobs')
   getAllJobs(
     @Query('title') jobTitle?: string,
     @Query('location') jobLocation?: string,

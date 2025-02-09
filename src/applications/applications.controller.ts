@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -20,41 +21,61 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 export class ApplicationsController {
   constructor(private readonly applicationService: ApplicationsService) {}
 
-  // @UseGuards(AuthGuard)
-  // @Post()
-  // createApplication(
-  //   @Body() createApplicationDto: CreateApplicationDto,
-  //   @Req() req: CustomRequest,
-  // ) {
-  //   return this.applicationService.createApplication(
-  //     req.userId,
-  //     createApplicationDto,
-  //   );
-  // }
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
+  @Post('create-application/:id')
+  createApplication(
+    @Body() createApplicationDto: CreateApplicationDto,
+    @Req() req: CustomRequest,
+    @Param('id') jobId: string,
+  ) {
+    return this.applicationService.createApplication(
+      req.userId,
+      jobId,
+      createApplicationDto,
+    );
+  }
 
-  // @Get()
-  // getApplications() {
-  //   return this.applicationService.getApplications();
-  // }
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
+  @Get('get-company-application/:id')
+  getApplicationByCompany(
+    @Req() req: CustomRequest,
+    @Param('id') applicationId: string,
+  ) {
+    return this.applicationService.getApplicationByCompany(
+      req.userId,
+      applicationId,
+    );
+  }
 
-  // @UseGuards(AuthGuard)
-  // @Get(':id')
-  // getApplication(@Param('id') id: string) {
-  //   return this.applicationService.getApplication(id);
-  // }
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
+  @Get('get-company-applications')
+  getAllApplicationsByCompany(
+    @Req() req: CustomRequest,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.applicationService.getAllApplicationsByCompany(
+      req.userId,
+      Number(page),
+      Number(limit),
+    );
+  }
 
-  // @UseGuards(AuthGuard, RolesGuard)
-  // @Roles('EMPLOYER')
-  // @Patch(':id')
-  // updateApplication(
-  //   @Body() updateApplicationDto: UpdateApplicationDto,
-  //   @Param('id') id: string,
-  //   @Req() req: CustomRequest,
-  // ) {
-  //   return this.applicationService.updateApplication(
-  //     id,
-  //     updateApplicationDto,
-  //     req.userId,
-  //   );
-  // }
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
+  @Patch('update-application-status/:id')
+  async updateApplicationStatus(
+    @Req() req: CustomRequest,
+    @Param('id') applicationId: string,
+    @Body() updateApplicationDto: UpdateApplicationDto,
+  ) {
+    return this.applicationService.updateApplicationStatus(
+      req.userId,
+      applicationId,
+      updateApplicationDto,
+    );
+  }
 }

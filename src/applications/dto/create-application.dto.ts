@@ -1,8 +1,13 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 enum ApplicationStatus {
   PENDING = 'PENDING',
-  REVIEWED = 'REVIEWED',
   REJECTED = 'REJECTED',
   ACCEPTED = 'ACCEPTED',
 }
@@ -10,23 +15,37 @@ enum ApplicationStatus {
 export class CreateApplicationDto {
   @IsString()
   @IsNotEmpty()
-  jobId: string;
+  name: string;
+
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  location: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+
+  // @IsString()
+  // @IsNotEmpty()
+  // jobId: string;
 
   @IsString()
   @IsNotEmpty()
   yearsOfExperience: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   resume: string;
 
   @IsString()
   @IsOptional()
   coverLetter: string;
 
-  @IsEnum(ApplicationStatus, {
-    message: `status must be one of the following values: ${Object.values(ApplicationStatus).join(', ')}`,
-  })
+  @IsEnum(ApplicationStatus)
   @IsOptional()
-  status: 'PENDING' | 'REVIEWED' | 'REJECTED' | 'ACCEPTED';
+  status: 'PENDING' | 'REJECTED' | 'ACCEPTED';
 }

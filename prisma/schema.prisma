@@ -21,6 +21,7 @@ model User {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   applications      Application[]
+  skill             Skill[]
   company           Company?
 }
 
@@ -46,46 +47,58 @@ model Company {
 }
 
 model Job {
-  id              Int           @id @default(autoincrement())
-  jobId           String            @unique @default(uuid())
+  id                 Int           @id @default(autoincrement())
+  jobId              String            @unique @default(uuid())
   jobTitle           String
   jobDescription     String
   jobCompanyId       String
   jobLocation        String
-  jobType         JobType
-  jobStatus       JobStatus
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  jobRequirements String
-  jobSummary      String
+  jobType            JobType
+  jobStatus          JobStatus
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  jobRequirements    String
+  jobSummary         String
   jobExperience      String
   jobSalary          String
-  applicants      Application[]
-  company        Company          @relation(fields: [jobCompanyId], references: [companyId], onDelete: Cascade)
+  applicants         Application[]
+  company            Company          @relation(fields: [jobCompanyId], references: [companyId], onDelete: Cascade)
 }
 
 model Application {
   id                Int               @id @default(autoincrement())
   applicationId     String            @unique @default(uuid())
+  name              String
+  email             String            @unique
+  location          String
+  phone             String         @unique
   jobId             String
-  resume            String?
+  resume            String
   coverLetter       String?
   status            ApplicationStatus
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-  userId       String
+  userId            String
   yearsOfExperience String
   user              User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
   job               Job               @relation(fields: [jobId], references: [jobId], onDelete: Cascade)
 }
 
 model Social {
-  id        Int      @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   socialId     String            @unique @default(uuid())
+  socialName   String
   companyId    String
-  createdAt DateTime @default(now())
-  expiresAt DateTime
+  createdAt    DateTime @default(now())
   company      Company     @relation(fields: [socialId], references: [companyId], onDelete: Cascade)
+}
+
+model Skill {
+  id        Int      @id @default(autoincrement())
+  skillId     String            @unique @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [skillId], references: [userId], onDelete: Cascade)
 }
 
 model VerificationToken {

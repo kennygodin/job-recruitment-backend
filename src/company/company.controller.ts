@@ -20,7 +20,8 @@ import { UpdateCompanyDto } from './dto/update-company-dto';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
   @Post('create-company')
   createCompany(
     @Body() createCompanyDto: CreateCompanyDto,
@@ -31,7 +32,7 @@ export class CompanyController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN')
-  @Patch('status/:id')
+  @Patch('update-company-status/:id')
   updateCompanyStatusByAdmin(
     @Param('id') companyId: string,
     @Body() updateCompanyDto: UpdateCompanyDto,
@@ -42,37 +43,10 @@ export class CompanyController {
     );
   }
 
-  @UseGuards(AuthGuard)
-  @Get('status/:id')
-  getCompanyStatusByCompany(
-    @Param('id') companyId: string,
-    @Req() req: CustomRequest,
-  ) {
-    return this.companyService.getCompanyDetailsByCompany(
-      req.userId,
-      companyId,
-    );
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch(':id')
-  updateBusiness(
-    @Body() updateBusinessDto: UpdateCompanyDto,
-    @Param('id') id: string,
-    @Req() req: CustomRequest,
-  ) {
-    return null;
-    // return this.businessService.updateBusiness(
-    //   id,
-    //   req.userId,
-    //   updateBusinessDto,
-    // );
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch(':id')
-  deleteBusiness(@Param('id') id: string, @Req() req: CustomRequest) {
-    return null;
-    // return this.businessService.deleteBusiness(id, req.userId);
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('USER')
+  @Get('get-company-details')
+  getCompanyDetailsByCompany(@Req() req: CustomRequest) {
+    return this.companyService.getCompanyDetailsByCompany(req.userId);
   }
 }

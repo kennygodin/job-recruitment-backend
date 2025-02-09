@@ -7,140 +7,176 @@ import {
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { DatabaseService } from '../database/database.service';
 import { UpdateApplicationDto } from './dto/update-application.dto';
-import { ResendService } from '../utils/resend/resend.service';
+import { MailService } from 'src/utils/mail/mail.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly emailService: ResendService,
+    private readonly db: DatabaseService,
+    private readonly mailService: MailService,
   ) {}
 
-  // async createApplication(
-  //   userId: string,
-  //   createApplicationDto: CreateApplicationDto,
-  // ) {
-  //   const { jobId, yearsOfExperience, resume, coverLetter } =
-  //     createApplicationDto;
-  //   // Find is an application by the user already exists
-  //   const applicationExists = this.databaseService.application.findMany({
-  //     where: {
-  //       appliedById: userId,
-  //       jobId,
-  //     },
-  //   });
+  async updateApplicationStatus(
+    userId: string,
+    applicationId: string,
+    updateApplicationDto: UpdateApplicationDto,
+  ) {
+    const user = await this.db.user.findUnique({
+      where: { userId },
+      include: { company: true },
+    });
 
-  //   if (applicationExists) {
-  //     throw new UnauthorizedException('Application to this job exists already');
-  //   }
-  //   const newApplication = await this.databaseService.application.create({
-  //     data: {
-  //       resume,
-  //       coverLetter,
-  //       yearsOfExperience,
-  //       appliedById: userId,
-  //       jobId,
-  //       status: 'PENDING',
-  //     },
-  //   });
+    if (!user || !user.company) {
+      throw new NotFoundException('Company not found!');
+    }
 
-  //   const application = await this.databaseService.application.findUnique({
-  //     where: {
-  //       applicationId: newApplication.applicationId,
-  //     },
-  //     include: {
-  //       job: {
-  //         include: {
-  //           postedBy: true,
-  //         },
-  //       },
-  //       appliedBy: true,
-  //     },
-  //   });
+    const application = await this.db.application.findUnique({
+      where: { applicationId },
+      include: { job: true, user: true },
+    });
 
-  //   if (!application) {
-  //     throw new NotFoundException('Application not found');
-  //   }
+    if (!application) {
+      throw new NotFoundException('Application not found!');
+    }
 
-  //   // const { email, name } = application.job.postedBy;
+    if (application.job.jobCompanyId !== user.company.companyId) {
+      throw new ForbiddenException('Unauthorized to update this application!');
+    }
 
-  //   // this.emailService.sendCreateApplicationMail(
-  //   //   email,
-  //   //   name,
-  //   //   application.job,
-  //   //   application.status,
-  //   //   application.applicationId,
-  //   // );
+    const updatedApplication = await this.db.application.update({
+      where: { applicationId },
+      data: { status: updateApplicationDto.status },
+    });
 
-  //   return application;
-  // }
+    if (updateApplicationDto.status === 'ACCEPTED') {
+      await this.mailService.sendApplicationAcceptedEmail(
+        application.user.email,
+        application.user.name,
+        application.job.jobTitle,
+      );
+    }
 
-  // async getApplications() {
-  //   const applications = await this.databaseService.application.findMany();
-  //   if (!applications.length) {
-  //     throw new NotFoundException('Applications not found');
-  //   }
+    if (updateApplicationDto.status === 'REJECTED') {
+      await this.mailService.sendApplicationRejectedEmail(
+        application.user.email,
+        application.user.name,
+        application.job.jobTitle,
+      );
+    }
 
-  //   return applications;
-  // }
+    return updatedApplication;
+  }
 
-  // async getApplication(applicationId: string) {
-  //   return this.databaseService.application.findUnique({
-  //     where: {
-  //       applicationId,
-  //     },
-  //   });
-  // }
+  async getApplicationByCompany(userId: string, applicationId: string) {
+    const user = await this.db.user.findUnique({
+      where: { userId },
+      include: { company: true },
+    });
 
-  // async updateApplication(
-  //   applicationId: string,
-  //   updateApplicationDto: UpdateApplicationDto,
-  //   userId: string,
-  // ) {
-  //   const application = await this.databaseService.application.findUnique({
-  //     where: {
-  //       applicationId,
-  //     },
-  //     include: {
-  //       job: {
-  //         include: {
-  //           postedBy: true,
-  //         },
-  //       },
-  //       appliedBy: true,
-  //     },
-  //   });
+    if (!user || !user.company) {
+      throw new NotFoundException('Company not found!');
+    }
 
-  //   if (!application) {
-  //     throw new NotFoundException('Application not found');
-  //   }
+    const application = await this.db.application.findUnique({
+      where: { applicationId },
+      include: { job: true },
+    });
 
-  //   if (application.job.postedById !== userId) {
-  //     throw new ForbiddenException(
-  //       'You are not authorized to update this application',
-  //     );
-  //   }
+    if (!application) {
+      throw new NotFoundException('Application not found!');
+    }
 
-  //   // const update = await this.databaseService.application.update({
-  //   //   where: {
-  //   //     applicationId,
-  //   //   },
-  //   //   data: {
-  //   //     status: updateApplicationDto.status,
-  //   //   },
-  //   // });
+    if (application.job.jobCompanyId !== user.company.companyId) {
+      throw new ForbiddenException('Unauthorized to access this application!');
+    }
 
-  //   // Send notification email when status changes
-  //   const { name, email } = application.appliedBy;
+    return application;
+  }
 
-  //   // this.emailService.sendApplicationStatusMail(
-  //   //   email,
-  //   //   name,
-  //   //   application.job,
-  //   //   update.status,
-  //   //   update.applicationId,
-  //   // );
+  async getAllApplicationsByCompany(userId: string, page = 1, limit = 10) {
+    const user = await this.db.user.findUnique({
+      where: { userId },
+      include: { company: true },
+    });
 
-  //   return 'Application status updated';
-  // }
+    if (!user || !user.company) {
+      throw new NotFoundException('Company not found!');
+    }
+
+    const totalCount = await this.db.application.count({
+      where: {
+        job: {
+          jobCompanyId: user.company.companyId,
+        },
+      },
+    });
+
+    if (totalCount === 0) {
+      throw new NotFoundException('No applications yet!');
+    }
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const offset = (page - 1) * limit;
+
+    const applications = await this.db.application.findMany({
+      where: {
+        job: {
+          jobCompanyId: user.company.companyId,
+        },
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      totalCount,
+      totalPages,
+      currentPage: page,
+      applications,
+    };
+  }
+
+  async createApplication(
+    userId: string,
+    jobId: string,
+    createApplicationDto: CreateApplicationDto,
+  ) {
+    const job = await this.db.job.findUnique({
+      where: { jobId },
+      include: { company: true },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job does not exist!');
+    }
+
+    const application = await this.db.application.findFirst({
+      where: {
+        userId,
+        jobId,
+      },
+    });
+
+    if (application) {
+      throw new UnauthorizedException('Already applied!');
+    }
+
+    const newApplication = await this.db.application.create({
+      data: {
+        status: 'PENDING',
+        userId,
+        jobId,
+        ...createApplicationDto,
+      },
+    });
+
+    await this.mailService.applicationMailToCompany(
+      job.company.notificationEmail,
+      job.company.companyName,
+      job.jobTitle,
+      newApplication.name,
+    );
+
+    return { message: 'Job applied!' };
+  }
 }

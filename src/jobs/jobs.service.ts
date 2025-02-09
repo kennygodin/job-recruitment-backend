@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
@@ -20,7 +24,8 @@ export class JobsService {
       });
 
       if (!jobs) {
-        return { message: 'No job found!' };
+        // return { message: 'No job found!' };
+        throw new NotFoundException('No jobs found!');
       }
 
       await this.db.job.delete({
@@ -75,7 +80,8 @@ export class JobsService {
       });
 
       if (!jobs) {
-        return { message: 'No job found!' };
+        throw new NotFoundException('No jobs found!');
+        // return { message: 'No job found!' };
       }
 
       return jobs;
@@ -95,7 +101,8 @@ export class JobsService {
       });
 
       if (!job) {
-        return { message: 'Job not found!' };
+        throw new NotFoundException('No job found!');
+        // return { message: 'Job not found!' };
       }
 
       return job;
@@ -111,7 +118,9 @@ export class JobsService {
       },
     });
     if (!job) {
-      return { message: 'Job not found!' };
+      throw new NotFoundException('No jobs found!');
+
+      // return { message: 'Job not found!' };
     }
 
     return job;
@@ -122,7 +131,7 @@ export class JobsService {
     jobLocation?: string,
     jobType?: JobType,
     page: number = 1,
-    limit: number = 1,
+    limit: number = 10,
   ) {
     const pageNumber = Math.max(1, page);
     const pageSize = Math.max(1, limit);
@@ -149,7 +158,8 @@ export class JobsService {
     const totalJobs = await this.db.job.count({ where: filters });
 
     if (!jobs.length) {
-      return { message: 'No jobs found!' };
+      throw new NotFoundException('No jobs found!');
+      // return { message: 'No jobs found!' };
     }
 
     return {
@@ -170,6 +180,7 @@ export class JobsService {
       jobSalary,
       jobStatus,
       jobSummary,
+      jobLocation,
     } = createJobDto;
 
     const user = await this.db.user.findUnique({
@@ -183,7 +194,7 @@ export class JobsService {
           jobTitle,
           jobDescription,
           jobCompanyId: user.company.companyId,
-          jobLocation: user.company.companyAddress,
+          jobLocation,
           jobType,
           jobStatus,
           jobExperience,
