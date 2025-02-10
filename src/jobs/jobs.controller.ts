@@ -49,6 +49,11 @@ export class JobsController {
     );
   }
 
+  @Get('categorized-jobs')
+  getCategorizedJobs() {
+    return this.jobsService.getJobCount();
+  }
+
   // GET ALL BY COMPANY
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('USER')

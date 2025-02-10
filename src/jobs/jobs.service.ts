@@ -81,7 +81,6 @@ export class JobsService {
 
       if (!jobs) {
         throw new NotFoundException('No jobs found!');
-        // return { message: 'No job found!' };
       }
 
       return jobs;
@@ -124,6 +123,35 @@ export class JobsService {
     }
 
     return job;
+  }
+
+  async getJobCount() {
+    const jobs = await this.db.job.findMany();
+
+    const titleGroups: Record<string, string> = {};
+    const jobCounts: Record<string, number> = {};
+
+    jobs.forEach((job) => {
+      const title = job.jobTitle.trim().toLowerCase();
+
+      let standardizedTitle = Object.keys(titleGroups).find(
+        (key) => title.includes(key) || key.includes(title),
+      );
+
+      if (!standardizedTitle) {
+        standardizedTitle = title;
+        titleGroups[title] = standardizedTitle;
+      }
+
+      const formattedTitle = standardizedTitle
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      jobCounts[formattedTitle] = (jobCounts[formattedTitle] || 0) + 1;
+    });
+
+    return jobCounts;
   }
 
   async getJobs(
@@ -181,6 +209,7 @@ export class JobsService {
       jobStatus,
       jobSummary,
       jobLocation,
+      keywords,
     } = createJobDto;
 
     const user = await this.db.user.findUnique({
@@ -188,25 +217,26 @@ export class JobsService {
       include: { company: true },
     });
 
-    if (user.company && user.company.userId === userId) {
-      await this.db.job.create({
-        data: {
-          jobTitle,
-          jobDescription,
-          jobCompanyId: user.company.companyId,
-          jobLocation,
-          jobType,
-          jobStatus,
-          jobExperience,
-          jobRequirements,
-          jobSalary,
-          jobSummary,
-        },
-      });
-
-      return { message: 'Job created!' };
+    if (!user.company || user.company.userId !== userId) {
+      throw new UnauthorizedException('Unauthorized to create jobs!');
     }
 
-    throw new UnauthorizedException('Unauthorized to create jobs!');
+    await this.db.job.create({
+      data: {
+        jobTitle,
+        jobDescription,
+        jobCompanyId: user.company.companyId,
+        jobLocation,
+        jobType,
+        jobStatus,
+        jobExperience,
+        jobRequirements,
+        jobSalary,
+        jobSummary,
+        keywords, // Storing keywords
+      },
+    });
+
+    return { message: 'Job created!' };
   }
 }

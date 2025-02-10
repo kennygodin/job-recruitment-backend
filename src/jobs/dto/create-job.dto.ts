@@ -5,6 +5,8 @@ import {
   IsEnum,
   IsOptional,
   IsBoolean,
+  IsArray,
+  ArrayNotEmpty,
 } from 'class-validator';
 
 enum JobType {
@@ -42,6 +44,11 @@ export class CreateJobDto {
   @IsNotEmpty()
   @IsString()
   jobExperience: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  keywords: string[];
 
   @IsNotEmpty()
   @IsString()

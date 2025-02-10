@@ -62,8 +62,11 @@ model Job {
   jobExperience      String
   jobSalary          String
   applicants         Application[]
+   keywords          String[] 
   company            Company          @relation(fields: [jobCompanyId], references: [companyId], onDelete: Cascade)
 }
+
+// TODO: ADD VACANCY
 
 model Application {
   id                Int               @id @default(autoincrement())
